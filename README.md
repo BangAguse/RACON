@@ -24,159 +24,122 @@ Lightweight Chrome Extension for Web Reconnaissance & Security Awareness
 
 ---
 
-## ❓ Apa itu RACON?
+## What is RACON?
 
-_RACON (The Stealthy Bandit Recon)_ adalah **Chrome Extension** yang dirancang untuk melakukan  
-**web reconnaissance ringan dan deteksi awal potensi risiko keamanan** langsung dari sisi client (browser).
+RACON (The Stealthy Bandit Recon) is a Chrome extension designed for lightweight web reconnaissance and quick detection of potential security issues directly from the browser.
 
-RACON mengusung pendekatan **defensive-first**, yaitu:
-- Tidak melakukan eksploitasi aktif
-- Tidak mengirim payload berbahaya
-- Tidak memodifikasi sistem target
-- Tidak melakukan brute force atau serangan otomatis
+RACON follows a **defensive-first** approach:
+- No active exploitation
+- No sending of harmful payloads
+- No modification of target systems
+- No brute-force or automated attacks
 
-Semua proses dilakukan melalui:
-- data publik,
-- response browser,
-- konfigurasi client-side,
-- dan artefak yang memang terekspos ke pengguna biasa.
+All operations are performed using:
+- public information
+- browser responses
+- client-side configuration
+- and artifacts intentionally exposed to users
 
-RACON **benar-benar bekerja**, bukan simulasi, dan tidak memalsukan hasil analisis.
-
----
-
-## ⚠️ Disclaimer
-
-RACON dibuat untuk **edukasi, audit mandiri, dan peningkatan kesadaran keamanan web**.  
-Penggunaan tanpa izin eksplisit dari pemilik sistem atau untuk aktivitas ilegal sepenuhnya berada di luar tanggung jawab pengembang.
-
-Gunakan hanya pada sistem yang:
-- kamu miliki,
-- kamu kelola,
-- atau kamu punya izin tertulis untuk mengaudit.
+RACON is a practical, read-only reconnaissance tool — not a simulation or falsified analysis.
 
 ---
 
-## 🔍 Latar Belakang dan Tujuan
+## Disclaimer
 
-Banyak insiden keamanan web terjadi bukan karena eksploitasi canggih,  
-melainkan karena **konfigurasi buruk, informasi terbuka, dan kelalaian dasar**.
+RACON is intended for education, self-audit, and raising web security awareness. Use without explicit authorization from the system owner or for illegal activities is strictly the user's responsibility.
 
-RACON dibuat untuk menjawab kebutuhan tersebut:
-memberikan **visibilitas cepat** terhadap permukaan serangan (*attack surface*) tanpa harus:
-- menggunakan tool berat,
-- meninggalkan browser,
-- atau langsung masuk ke fase eksploitasi.
-
-Tujuan utama RACON:
-- Membantu fase recon awal secara aman
-- Meningkatkan awareness developer & security team
-- Mempermudah audit ringan sebelum testing lanjutan
-- Menyediakan tool edukatif yang transparan dan mudah dipahami
-
-RACON **bukan exploit framework**.  
-Ia adalah alat observasi — bukan senjata.
+Use only on systems that you own, manage, or have written permission to audit.
 
 ---
 
-## 🧠 Filosofi Proyek
+## Background & Goals
 
-Nama **RACON** terinspirasi dari **raccoon (rakun)**:
+Many web security incidents are caused by misconfiguration, exposed information, or basic oversights — not advanced exploits.
 
-- **Scavenger** → mengumpulkan detail kecil yang sering terlewat
-- **Stealthy** → bekerja senyap tanpa menarik perhatian sistem
-- **Bandit** → “mengambil” informasi, bukan merusak sistem
+RACON aims to provide fast visibility into an application's attack surface without heavy tools, leaving the browser, or moving into active exploitation.
 
-RACON fokus pada:
-**visibilitas, transparansi, dan pencegahan**, bukan perusakan.
+Primary goals:
+- Help early-stage recon safely
+- Increase awareness for developers & security teams
+- Ease light audits before deeper testing
+- Provide an educational, transparent tool
 
----
-
-## 🛠️ Fitur & Tools
-
-RACON menyediakan **12 modul utama**:
-
-1. **Tech Stack Detection**  
-   Identifikasi framework, library, dan teknologi website.
-
-2. **CMS Detection**  
-   Deteksi Content Management System (misalnya WordPress).
-
-3. **Subdomain Enumeration**  
-   Pengumpulan subdomain dari sumber publik.
-
-4. **Endpoint Discovery**  
-   Identifikasi endpoint API dan URL internal.
-
-5. **External Assets Listing**  
-   Daftar domain dan layanan pihak ketiga.
-
-6. **Email Extraction**  
-   Pengambilan alamat email publik yang terekspos.
-
-7. **SQL Injection Indicator**  
-   Deteksi indikasi awal pola SQL Injection (tanpa eksploitasi).
-
-8. **XSS Indicator**  
-   Identifikasi potensi XSS sink dan refleksi input.
-
-9. **Sensitive Files Check**  
-   Pengecekan keberadaan file sensitif (`.env`, `.git`, `.bak`, dll).
-
-10. **API Key Detection**  
-    Deteksi kemungkinan kebocoran API key di sisi client.
-
-11. **Security Headers Audit**  
-    Audit header keamanan (CSP, HSTS, X-Frame-Options, dll).
-
-12. **Cookie Security Audit**  
-    Analisis atribut cookie (`HttpOnly`, `Secure`, `SameSite`).
-
-Semua modul bersifat **read-only** dan non-intrusif.
+RACON is not an exploit framework — it is an observation tool.
 
 ---
 
-## 📦 Instalasi
+## Philosophy
 
-1. Clone atau download repository ini
-2. Buka Chrome dan akses:
+Name inspiration: **RACON** from **raccoon**:
+- Scavenger → collects small but important overlooked details
+- Stealthy → operates quietly without attracting attention
+- Bandit → gathers information rather than damaging systems
+
+Focus: visibility, transparency, and prevention.
+
+---
+
+## Features
+
+RACON provides 12 main modules:
+
+1. Tech Stack Detection — Identify frameworks, libraries, and technologies.
+2. CMS Detection — Detect common CMS (e.g., WordPress).
+3. Subdomain Enumeration — Collect publicly-known subdomains.
+4. Endpoint Discovery — Find API endpoints and internal URLs.
+5. External Assets Listing — List third-party domains and services.
+6. Email Extraction — Extract exposed public email addresses.
+7. SQL Injection Indicator — Identify potential SQL injection patterns (non-exploitative).
+8. XSS Indicator — Find potential XSS sinks and reflected inputs.
+9. Sensitive Files Check — Check for presence of sensitive files (`.env`, `.git`, `.bak`, etc.).
+10. API Key Detection — Detect possible client-side API key leaks.
+11. Security Headers Audit — Audit headers (CSP, HSTS, X-Frame-Options, etc.).
+12. Cookie Security Audit — Analyze cookie attributes (`HttpOnly`, `Secure`, `SameSite`).
+
+All modules are read-only and non-intrusive.
+
+---
+
+## Installation
+
+1. Clone or download the repository.
+2. Open Chrome and go to:
 ```
 chrome://extensions/
 ```
-3. Aktifkan **Developer Mode**
-4. Klik **Load unpacked**
-5. Pilih folder **RACON**
-6. Ekstensi siap digunakan
+3. Enable **Developer Mode**.
+4. Click **Load unpacked**.
+5. Select the **RACON** folder.
+6. The extension is ready to use.
 
 ---
 
-## 🚀 Cara Penggunaan
+## Usage
 
-1. Buka website target
-2. Klik ikon **RACON** di toolbar Chrome
-3. Jalankan modul yang diinginkan
-4. Analisis hasil yang ditampilkan
-5. Gunakan informasi untuk audit, dokumentasi, atau pembelajaran
+1. Visit a target website.
+2. Click the **RACON** icon in the Chrome toolbar.
+3. Run the desired module(s).
+4. Review the displayed results.
+5. Use results for audits, documentation, or learning.
 
 ---
 
-## ☕ Support Me
+## Support & Donations
 
-Jika proyek ini bermanfaat dan membantu pekerjaanmu, kamu bisa mendukung pengembangannya
-melalui donasi sebagai bentuk apresiasi terhadap karya open-source ini.
+If you find RACON useful, consider supporting its development via donation.
 
 <p align="center">
   <img src="https://i.ibb.co.com/21mcgrL6/Untitled-design-20251229-042141-0000.png" alt="DANA Logo" width="140"><br>
   <b>DANA:</b> 085756444803
 </p>
 
-Dukunganmu membantu proyek ini tetap hidup, terawat, dan terus dikembangkan 🚀
+Your support helps keep the project maintained and improved.
 
 ---
 
-## 📜 Lisensi
+## License
 
-Proyek ini dirilis di bawah **MIT License**.
+This project is released under the **MIT License**.
 
 ---
 
