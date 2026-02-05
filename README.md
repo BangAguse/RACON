@@ -65,17 +65,6 @@ RACON is not an exploit framework — it is an observation tool.
 
 ---
 
-## Philosophy
-
-Name inspiration: **RACON** from **raccoon**:
-- Scavenger → collects small but important overlooked details
-- Stealthy → operates quietly without attracting attention
-- Bandit → gathers information rather than damaging systems
-
-Focus: visibility, transparency, and prevention.
-
----
-
 ## Features
 
 RACON provides 12 main modules:
