@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/badge/Maintained-Yes-2ea44f" />
   <img src="https://img.shields.io/badge/License-MIT-yellow" />
   <a href="https://github.com/BangAguse">
-    <img src="https://img.shields.io/badge/Author-Muh.%20Agus%20Tri%20Ananda-blue" />
+    <img src="https://img.shields.io/badge/Author-Muh.%20Agus%20Tri%20Ananda-red" />
   </a>
 </p>
 
