@@ -12,7 +12,6 @@
   <a href="https://github.com/BangAguse">
     <img src="https://img.shields.io/badge/Author-Muh.%20Agus%20Tri%20Ananda-blue" />
   </a>
-  <img src="https://img.shields.io/badge/⚠️%20WARNING-Defensive%20Use%20Only-red" />
 </p>
 
 # RACON
