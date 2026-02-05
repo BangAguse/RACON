@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RACON - The Stealthy Bandit Recon</title>
+    <style>
+        body {
+            background-color: #050505;
+            color: #39FF14;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 10px;
+            border: 2px solid #39FF14;
+            box-shadow: 0 0 10px #39FF14;
+            height: 600px;
+            overflow: hidden;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .logo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto;
+            display: block;
+        }
+        .title {
+            font-size: 18px;
+            color: #39FF14;
+            text-shadow: 0 0 10px #39FF14;
+        }
+        .terminal {
+            background-color: #000;
+            border: 1px solid #39FF14;
+            padding: 10px;
+            height: 500px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        .input-area {
+            display: flex;
+            margin-top: 10px;
+        }
+        .prompt {
+            color: #39FF14;
+            margin-right: 5px;
+        }
+        input {
+            background: transparent;
+            border: none;
+            color: #39FF14;
+            outline: none;
+            flex: 1;
+            font-family: inherit;
+            font-size: 12px;
+        }
+        .warning {
+            color: #FFA500;
+        }
+        .error {
+            color: #FF4500;
+        }
+        .success {
+            color: #00FF00;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="icons/raccoon.svg" class="logo" width="120" height="120" alt="RACON Logo">
+        <h1 class="title">RACON</h1>
+        <p>The Stealthy Bandit Recon</p>
+        <p class="success">Copyright © Muh. Agus Tri Ananda</p>
+    </div>
+    <div class="terminal" id="terminal-output">
+        <div>RACON - The Stealthy Bandit Recon</div>
+        <div>Available Tools:</div>
+        <div>1. Tech Stack</div>
+        <div>2. CMS</div>
+        <div>3. Subdomains</div>
+        <div>4. Endpoints</div>
+        <div>5. External Assets</div>
+        <div>6. Emails</div>
+        <div>7. SQLi Check</div>
+        <div>8. XSS Check</div>
+        <div>9. Sensitive Files</div>
+        <div>10. API Keys</div>
+        <div>11. Security Headers</div>
+        <div>12. Cookies</div>
+        <div></div>
+        <div>Silahkan pilih tools berdasarkan nomor dan masukkan di perintah</div>
+        <div>Commands: [nomor] untuk run tool, clear untuk hapus jejak, download untuk download result</div>
+    </div>
+    <div class="input-area">
+        <span class="prompt">racon> </span>
+        <input type="text" id="command-input" placeholder="Enter command...">
+    </div>
+    <script src="popup.js"></script>
+</body>
+</html>

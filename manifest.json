@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "RACON - The Stealthy Bandit Recon",
+  "version": "0.1.0",
+  "description": "A Chrome extension for web reconnaissance and vulnerability detection.",
+  "permissions": [
+    "tabs",
+    "scripting",
+    "storage",
+    "activeTab",
+    "webRequest"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "RACON - Stealthy Bandit Recon",
+    "default_icon": "icons/raccoon.svg"
+  }
+}
