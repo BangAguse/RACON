@@ -14,10 +14,13 @@
   </a>
 </p>
 
-# RACON
+---
 
-_The Stealthy Bandit Recon_  
-Lightweight Chrome Extension for Web Reconnaissance & Security Awareness
+<div align="center">
+  <h1>RACON</h1>
+  <h2>The Stealthy Bandit Recon.</h2>
+  <h3>Lightweight Chrome Extension for Web Reconnaissance & Security Awareness.</h3>
+</div>
 
 ---
 
