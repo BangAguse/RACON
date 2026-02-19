@@ -3,7 +3,7 @@
 </div>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-0.1.0-brightgreen" />
+  <img src="https://img.shields.io/badge/Version-0.2.0-brightgreen" />
   <img src="https://img.shields.io/badge/Language-JavaScript-yellow" />
   <img src="https://img.shields.io/badge/Type-Chrome%20Extension-blue" />
   <img src="https://img.shields.io/badge/Open%20Source-Yes-brightgreen" />
