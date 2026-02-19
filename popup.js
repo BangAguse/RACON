@@ -55,48 +55,55 @@ function runFeature(index) {
         return;
     }
 
-    appendOutput(`<em>Running feature ${index + 1}...</em>`, true);
+    appendOutput(`<em>⏳ Preparing scanning for feature ${index + 1}...</em>`, true);
 
-    chrome.tabs.sendMessage(currentTab.id, { action: 'runFeature', index: index }, function(response) {
-        if (chrome.runtime.lastError) {
-            chrome.scripting.executeScript({
-                target: { tabId: currentTab.id },
-                files: ['content.js']
-            }, function() {
+    // Inject content script and wait a bit for modules to load
+    chrome.scripting.executeScript({
+        target: { tabId: currentTab.id },
+        files: ['modules-embedded.js', 'content.js']
+    }, function() {
+        // Modules embedded directly, should be ready immediately
+        setTimeout(() => {
+            appendOutput(`<em>▶ Running feature ${index + 1}...</em>`, true);
+            chrome.tabs.sendMessage(currentTab.id, { action: 'runFeature', index: index }, function(response) {
                 if (chrome.runtime.lastError) {
-                    appendOutput('<span style="color:#FF4500;">Injection failed.</span>', true);
+                    appendOutput(`<span style="color:#FF4500;">✗ Error: ${chrome.runtime.lastError.message}</span>`, true);
                     return;
                 }
-                chrome.tabs.sendMessage(currentTab.id, { action: 'runFeature', index: index }, function(resp2) {
-                    if (chrome.runtime.lastError) {
-                        appendOutput('<span style="color:#FF4500;">Feature failed.</span>', true);
-                    } else {
-                        handleFeatureResponse(resp2);
-                    }
-                });
+                handleFeatureResponse(response);
             });
-        } else {
-            handleFeatureResponse(response);
-        }
+        }, 500);
     });
 }
 
 function handleFeatureResponse(response) {
     if (response && response.result !== undefined) {
-        appendOutput('------------------------------------------------');
-        appendOutput(`<strong>Feature:</strong> ${response.feature}`, true);
-        if (Array.isArray(response.result) || typeof response.result === 'object') {
+        appendOutput('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        appendOutput(`<strong>✓ ${response.feature}</strong>`, true);
+        
+        // Display formatted output if available
+        if (response.formatted) {
+            appendOutput(`<pre style="background:#111; padding:8px; border:1px solid #39FF14; margin:5px 0; font-size:11px; line-height:1.4;">${escapeHtml(response.formatted)}</pre>`, true);
+        } else if (Array.isArray(response.result) || typeof response.result === 'object') {
             appendOutput(`<pre style="background:#111; padding:5px; border:1px solid #39FF14; margin:5px 0;">${JSON.stringify(response.result, null, 2)}</pre>`, true);
         } else {
             appendOutput(`<strong>Result:</strong> ${String(response.result)}`, true);
         }
-        appendOutput('------------------------------------------------');
+        appendOutput('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         if (response.feature) {
             reconData[response.feature] = response.result;
         }
     } else {
         appendOutput('<span style="color:#FFA500;">No result returned.</span>', true);
     }
+}
+
+function escapeHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/[&<>\"']/g, function(c) { 
+        const m = {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":"&#39;"}; 
+        return m[c]; 
+    });
 }
 
 function clearOutput() {
