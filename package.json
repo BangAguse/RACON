@@ -1,0 +1,13 @@
+{
+  "name": "racon",
+  "version": "0.2.0",
+  "private": true,
+  "scripts": {
+    "test": "mocha --recursive --exit"
+  },
+  "devDependencies": {
+    "chai": "^4.3.7",
+    "jsdom": "^22.1.0",
+    "mocha": "^10.2.0"
+  }
+}
