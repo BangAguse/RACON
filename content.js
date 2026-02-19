@@ -1,19 +1,54 @@
 let reconData = {};
 let currentFeatureIndex = 0;
-const features = [
-    { name: 'Tech Stack', func: detectTechStack },
-    { name: 'CMS', func: detectCMS },
-    { name: 'Subdomains', func: extractSubdomains },
-    { name: 'Endpoints', func: extractEndpoints },
-    { name: 'External Assets', func: listExternalAssets },
-    { name: 'Emails', func: harvestEmails },
-    { name: 'SQLi Check', func: detectSQLi },
-    { name: 'XSS Check', func: detectXSS },
-    { name: 'Sensitive Files', func: detectSensitiveFiles },
-    { name: 'API Keys', func: detectAPIKeys },
-    { name: 'Security Headers', func: () => auditSecurityHeaders(reconData.serverHeaders) },
-    { name: 'Cookies', func: auditCookies }
+let modulesReady = false;
+const featureList = [
+    { name: 'Tech Stack', key: 'detectTechStack' },
+    { name: 'CMS', key: 'detectCMS' },
+    { name: 'Subdomains', key: 'extractSubdomains' },
+    { name: 'Endpoints', key: 'extractEndpoints' },
+    { name: 'External Assets', key: 'listExternalAssets' },
+    { name: 'Emails', key: 'harvestEmails' },
+    { name: 'SQLi Check', key: 'detectSQLi' },
+    { name: 'XSS Check', key: 'detectXSS' },
+    { name: 'Sensitive Files', key: 'detectSensitiveFiles' },
+    { name: 'API Keys', key: 'detectAPIKeys' },
+    { name: 'Security Headers', key: 'auditSecurityHeaders' },
+    { name: 'Cookies', key: 'auditCookies' }
 ];
+
+// Initialize module namespace early
+window.__raconModules = window.__raconModules || {};
+
+function getFeatureFunction(key) {
+    try {
+        if (key === 'auditSecurityHeaders') return function() { return window.__raconModules && window.__raconModules.auditSecurityHeaders ? window.__raconModules.auditSecurityHeaders(reconData.serverHeaders) : [] };
+        return window.__raconModules && window.__raconModules[key] ? window.__raconModules[key] : function() { return null; };
+    } catch (e) { return function() { return null; }; }
+}
+// Modules already embedded via modules-embedded.js (loaded before this script)
+// window.__raconModules is populated by modules-embedded.js
+// Fallback: if embedded didn't load, try external loader (backup)
+
+function formatResult(result) {
+    if (result === null || result === undefined) return '(no data)';
+    if (Array.isArray(result)) {
+        if (result.length === 0) return '(empty array)';
+        return result.map((r, i) => {
+            if (typeof r === 'string') return `  [${i+1}] ${r}`;
+            if (typeof r === 'object') return `  [${i+1}] ${r.type || 'item'}: ${r.description || JSON.stringify(r)}`;
+            return `  [${i+1}] ${String(r)}`;
+        }).join('\n');
+    }
+    if (typeof result === 'object') return JSON.stringify(result, null, 2);
+    return String(result);
+}
+
+function logScanProgress(featureName, status, details = '') {
+    const timestamp = new Date().toLocaleTimeString();
+    const marker = status === 'start' ? '▶' : status === 'ok' ? '✓' : '✗';
+    const msg = `[${timestamp}] ${marker} ${featureName}${details ? ': ' + details : ''}`;
+    safeLog(msg);
+}
 
 function safeLog() {
     try { console.debug.apply(console, arguments); } catch (e) {}
@@ -44,14 +79,19 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         return true;
     } else if (request.action === 'runFeature') {
         console.log('runFeature received, index:', request.index);
-        if (request.index >= 0 && request.index < features.length) {
-            const feature = features[request.index];
+        if (request.index >= 0 && request.index < featureList.length) {
+            const featureMeta = featureList[request.index];
+            logScanProgress(featureMeta.name, 'start');
+            const featureFunc = getFeatureFunction(featureMeta.key);
             try {
-                const result = feature.func();
+                const result = featureFunc();
                 console.log('feature result:', result);
-                sendResponse({ ok: true, result: result, feature: feature.name });
+                const formatted = formatResult(result);
+                logScanProgress(featureMeta.name, 'ok', formatted.split('\n')[0]);
+                sendResponse({ ok: true, result: result, feature: featureMeta.name, formatted: formatted });
             } catch (err) {
                 console.log('runFeature error:', err);
+                logScanProgress(featureMeta.name, 'error', err.message);
                 sendResponse({ ok: false, error: String(err) });
             }
         } else {
@@ -69,170 +109,37 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
 function runNextFeature() {
     console.log('runNextFeature called, index:', currentFeatureIndex);
-    if (currentFeatureIndex >= features.length) {
+    if (currentFeatureIndex >= featureList.length) {
         console.log('all features done');
         reconData.securityScore = calculateSecurityScore(reconData.vulnerabilities);
         renderOverlay(reconData, true);
         return;
     }
-    const feature = features[currentFeatureIndex];
-    console.log('running feature:', feature.name);
+    const featureMeta = featureList[currentFeatureIndex];
+    logScanProgress(featureMeta.name, 'start');
+    const featureFunc = getFeatureFunction(featureMeta.key);
+    console.log('running feature:', featureMeta.name);
     try {
-        const result = feature.func();
+        const result = featureFunc();
         console.log('feature result:', result);
-        reconData[feature.name.toLowerCase().replace(' ', '')] = result;
-        if (feature.name.includes('Check') || feature.name === 'Security Headers' || feature.name === 'Cookies') {
-            reconData.vulnerabilities.push(...result);
+        reconData[featureMeta.name.toLowerCase().replace(/\s+/g, '')] = result;
+        if (featureMeta.name.includes('Check') || featureMeta.name === 'Security Headers' || featureMeta.name === 'Cookies') {
+            if (Array.isArray(result)) reconData.vulnerabilities.push(...result);
         }
-        renderOverlay(reconData, false, feature.name, result);
+        const formatted = formatResult(result);
+        logScanProgress(featureMeta.name, 'ok', `${Array.isArray(result) ? result.length : 'N/A'} items`);
+        renderOverlay(reconData, false, featureMeta.name, result, formatted);
         currentFeatureIndex++;
     } catch (err) {
         console.log('runNextFeature error:', err);
+        logScanProgress(featureMeta.name, 'error', err.message);
         currentFeatureIndex++;
         runNextFeature();
     }
 }
 
-function detectTechStack() {
-    const scripts = document.querySelectorAll('script[src]');
-    const frameworks = [];
-    scripts.forEach(script => {
-        const src = script.src;
-        if (src.includes('react')) frameworks.push('React');
-        if (src.includes('vue')) frameworks.push('Vue');
-        if (src.includes('angular')) frameworks.push('Angular');
-        if (src.includes('jquery')) frameworks.push('jQuery');
-    });
-    return frameworks.join(', ') || 'Unknown';
-}
-
-function detectCMS() {
-    if (document.querySelector('meta[name="generator"][content*="WordPress"]')) return 'WordPress';
-    if (document.querySelector('link[href*="shopify"]')) return 'Shopify';
-    return 'Unknown';
-}
-
-function extractSubdomains() {
-    const links = document.querySelectorAll('a[href]');
-    const subdomains = new Set();
-    links.forEach(link => {
-        const url = new URL(link.href, window.location.origin);
-        if (url.hostname !== window.location.hostname) {
-            subdomains.add(url.hostname);
-        }
-    });
-    return Array.from(subdomains);
-}
-
-function analyzeRobotsSitemap() {
-    return { robots: '/robots.txt', sitemap: '/sitemap.xml' };
-}
-
-function extractEndpoints() {
-    const scripts = document.querySelectorAll('script');
-    const endpoints = [];
-    scripts.forEach(script => {
-        const text = script.textContent;
-        const matches = text.match(/https?:\/\/[^\s'"]+/g);
-        if (matches) endpoints.push(...matches);
-    });
-    return endpoints;
-}
-
-function listExternalAssets() {
-    const assets = document.querySelectorAll('script[src], link[href], img[src]');
-    const externals = new Set();
-    assets.forEach(asset => {
-        const src = asset.src || asset.href;
-        if (src && !src.startsWith(window.location.origin)) {
-            externals.add(new URL(src).hostname);
-        }
-    });
-    return Array.from(externals);
-}
-
-function harvestEmails() {
-    const text = document.body.textContent;
-    const emails = text.match(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g) || [];
-    return emails;
-}
-
-function detectSQLi() {
-    const inputs = document.querySelectorAll('input, textarea');
-    const vulns = [];
-    inputs.forEach(input => {
-        if (input.value.includes("'") || input.value.includes('--') || input.value.includes('OR 1=1')) {
-            vulns.push({ type: 'SQLi', description: 'Potential SQL injection in input', severity: 'high' });
-        }
-    });
-    return vulns;
-}
-
-function detectXSS() {
-    const sinks = document.querySelectorAll('[innerHTML], [outerHTML]');
-    const vulns = [];
-    sinks.forEach(sink => {
-        vulns.push({ type: 'XSS', description: 'Potential XSS sink found', severity: 'medium' });
-    });
-    return vulns;
-}
-
-function detectSensitiveFiles() {
-    const links = document.querySelectorAll('a[href]');
-    const vulns = [];
-    links.forEach(link => {
-        const href = link.href;
-        if (href.includes('.env') || href.includes('.git') || href.includes('phpinfo.php')) {
-            vulns.push({ type: 'Sensitive File', description: `Exposed: ${href}`, severity: 'high' });
-        }
-    });
-    return vulns;
-}
-
-function detectAPIKeys() {
-    const scripts = document.querySelectorAll('script');
-    const vulns = [];
-    scripts.forEach(script => {
-        const text = script.textContent;
-        if (text.match(/AKIA[0-9A-Z]{16}/) || text.match(/AIza[0-9A-Za-z-_]{35}/)) {
-            vulns.push({ type: 'API Key Leak', description: 'Potential API key exposed', severity: 'high' });
-        }
-    });
-    return vulns;
-}
-
-function auditSecurityHeaders(headers) {
-    headers = headers || {};
-    const vulns = [];
-    try {
-        if (!headers['Content-Security-Policy'] && !headers['content-security-policy']) vulns.push({ type: 'Security Headers', description: 'Missing CSP', severity: 'medium' });
-        if (!headers['Strict-Transport-Security'] && !headers['strict-transport-security']) vulns.push({ type: 'Security Headers', description: 'Missing HSTS', severity: 'medium' });
-        if (!headers['X-Frame-Options'] && !headers['x-frame-options']) vulns.push({ type: 'Security Headers', description: 'Missing X-Frame-Options', severity: 'low' });
-    } catch (err) {
-        safeLog('auditSecurityHeaders error:', err);
-    }
-    return vulns;
-}
-
-function auditCookies() {
-    const vulns = [];
-    try {
-        const raw = document.cookie || '';
-        if (!raw) return vulns;
-        const cookies = raw.split(';');
-        cookies.forEach(cookie => {
-            const parts = cookie.split('=');
-            const name = parts[0] ? parts[0].trim() : '';
-            if (name) {
-                vulns.push({ type: 'Insecure Cookie (heuristic)', description: `Cannot verify Secure/HttpOnly for cookie '${name}' from JS. Consider server-side audit.`, severity: 'low' });
-            }
-        });
-    } catch (err) {
-        safeLog('auditCookies error:', err);
-    }
-    return vulns;
-}
-
+// Feature implementations moved to modules/*.js — loaded at runtime.
+// Modules attach functions to `window.__raconModules`.
 function calculateSecurityScore(vulns) {
     try {
         vulns = vulns || [];
@@ -251,7 +158,7 @@ function calculateSecurityScore(vulns) {
     }
 }
 
-function renderOverlay(data, isFinal = false, currentFeature = '', currentResult = null) {
+function renderOverlay(data, isFinal = false, currentFeature = '', currentResult = null, formattedResult = '') {
     try {
         if (!data) return;
         const existing = document.getElementById('racon-overlay-container');
@@ -340,9 +247,13 @@ function renderOverlay(data, isFinal = false, currentFeature = '', currentResult
         if (!isFinal && currentFeature && currentResult !== null) {
             const secCurrent = document.createElement('div');
             secCurrent.className = 'section';
-            secCurrent.innerHTML = `<div><strong>Running:</strong> ${escapeHtml(currentFeature)}</div>`;
+            secCurrent.innerHTML = `<div><strong>▶ Running:</strong> ${escapeHtml(currentFeature)}</div>`;
             const resultDiv = document.createElement('div');
-            resultDiv.textContent = `Result: ${JSON.stringify(currentResult)}`;
+            resultDiv.style.fontFamily = 'monospace';
+            resultDiv.style.fontSize = '11px';
+            resultDiv.style.whiteSpace = 'pre-wrap';
+            resultDiv.style.color = '#39FF14';
+            resultDiv.textContent = formattedResult || `Result: ${JSON.stringify(currentResult)}`;
             secCurrent.appendChild(resultDiv);
             body.appendChild(secCurrent);
         } else if (isFinal) {
